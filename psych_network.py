@@ -7,7 +7,7 @@ from scipy.stats import pearsonr
 df = pd.read_csv("Eliksiirit_networkanalysis.csv", na_values = [' ']) #, dtype = float)
 
 pval = .1
-corr_thres = .15
+corr_thres = .175
 leave_out = ['Tutkimusnumero']
 cols = [col for col in df.columns if col not in leave_out]
 df = df[cols]
@@ -42,8 +42,8 @@ plt.figure(figsize = (20,20))
 edge_width = [20*G[u][v]['weight'] for u,v in G.edges()]
 pos=nx.spectral_layout(G)
 #pos=nx.shell_layout(G)
-#pos=nx.spring_layout(G)
-pos=nx.fruchterman_reingold_layout(G)
+pos=nx.spring_layout(G)
+#pos=nx.fruchterman_reingold_layout(G)
 #nx.draw_graphviz(G, prog='neato')
 nx.draw_networkx(G, pos = pos, node_color = 'blue', node_size=2000,
                  with_labels = False, alpha = .25, width=edge_width)
@@ -54,4 +54,5 @@ nx.draw_networkx_labels(G, pos, font_size=22, font_color='black')
 
 
 plt.axis('off')
+plt.savefig('network.png')
 plt.show()
