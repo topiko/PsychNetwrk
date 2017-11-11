@@ -3,13 +3,21 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
+from utils import part_corr
 
-df = pd.read_csv("Eliksiirit_networkanalysis.csv", na_values = [' ']) #, dtype = float)
+fname = 'ACTFöräldrar_network.csv'  #"Eliksiirit_networkanalysis.csv"
+df = pd.read_csv(fname, na_values = [' ']) #, dtype = float)
 
 pval = .05
 corr_thres = .0
-leave_out = ['Tutkimusnumero']
+leave_out = ['Tutkimusnumero', 'GROUP']
+keep = ['AAQ_PRE', 'CFQ_PRE', 'FFMQ_obs','FFMQ_des',
+        'FFMQ_awa', 'FFMQ_jud', 'FFMQ_rea', 'DASS_stress_PRE',
+        'DASS_anxiety_PRE', 'DASS_depression_PRE', 'ISI_PRE',
+        'SMBQ_FT_pre', 'SMBQ_HL_pre', 'SMBQ_SP_pre', 'SMBQ_MT_pre']
 cols = [col for col in df.columns if col not in leave_out]
+cols = [col for col in df.columns if col in keep]
+
 df = df[cols]
 
 cols = [col.split('_0')[0] for col in df.columns]
@@ -18,19 +26,29 @@ df.columns = cols
 corr_df = pd.DataFrame(index = cols, columns = cols)
 corr_s_df = pd.DataFrame(index = cols, columns = cols)
 network_df = pd.DataFrame(index = range(len(cols)**2),
-                          columns = ['source', 'target', 'weight', 'sign', 'significance'])
+                          columns = ['source', 'target', 'weight', 'part_corr',
+                                     'sign', 'sign_part', 'significance',
+                                     'significance_part'])
 
 for i,col_r in enumerate(cols):
     for j,col_c in enumerate(cols):
         x,y = df[col_r], df[col_c]
+        col_list = [col for col in df.columns if col not in [col_c, col_r]]
+        arr_tmp = df[col_list].values
+
         nans = np.logical_or(x.isnull(), y.isnull())
         cor, sig = pearsonr(x[~nans], y[~nans])
         corr_df.loc[col_r, col_c] = abs(cor)
+        part_corr_val, sig_part = part_corr(x.values, y.values, arr_tmp)
+        print(col_c, col_r, cor, part_corr_val)
         corr_s_df.loc[col_r, col_c] = sig
         n = i*len(cols) + j
         network_df.loc[n, ['source', 'target',
-                           'weight', 'sign',
-                           'significance']] = col_r, col_c, abs(cor), np.sign(cor), sig
+                           'weight', 'part_corr', 'sign', 'sign_part',
+                           'significance', 'significance_part']] = col_r, col_c, \
+                                              abs(cor), abs(part_corr_val), \
+                                              np.sign(cor), np.sign(part_corr_val), \
+                                              sig, sig_part
 
 mask = corr_s_df < pval
 corr_df[mask]
