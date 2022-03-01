@@ -1,4 +1,4 @@
 # PsychNetwrk
-Network of physiological and psycological variables
+Partial correlation network of physiological and psycological variables
 
-![alt_text](https://github.com/topiko/PsychNetwrk/blob/master/network.png)
+![netwk](https://github.com/topiko/PsychNetwrk/blob/master/network.png)
